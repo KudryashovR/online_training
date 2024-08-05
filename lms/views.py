@@ -1,9 +1,12 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 
 from lms.models import Course, Lesson
 from lms.serializers import CourseSerializer, LessonSerializer, UserProfileSerializer
+
+User = get_user_model()
 
 
 class CourseViewSet(viewsets.ModelViewSet):
