@@ -98,6 +98,36 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
+    """
+    Кастомная модель пользователя, расширяющая стандартную модель AbstractUser.
+
+    Атрибуты:
+        email : EmailField
+            Поле для хранения электронной почты пользователя. Уникальное и обязательное.
+        phone : CharField
+            Поле для хранения номера телефона пользователя. Может быть пустым.
+        city : CharField
+            Поле для хранения города пользователя. Может быть пустым.
+        avatar : ImageField
+            Поле для хранения аватара пользователя. Может быть пустым.
+
+    Метапараметры:
+        verbose_name : str
+            Человекочитаемое имя модели в единственном числе.
+        verbose_name_plural : str
+            Человекочитаемое имя модели во множественном числе.
+
+    Специальные атрибуты:
+        USERNAME_FIELD : str
+            Поле, используемое для входа пользователя (вместо стандартного username).
+        REQUIRED_FIELDS : list
+            Список обязательных полей (в дополнение к USERNAME_FIELD).
+
+    Методы:
+        __str__():
+            Возвращает строковое представление объекта, равное электронной почте пользователя.
+    """
+
     username = None
     email = models.EmailField(unique=True, verbose_name='почта')
     phone = models.CharField(max_length=15, blank=True, null=True, verbose_name='телефон')
