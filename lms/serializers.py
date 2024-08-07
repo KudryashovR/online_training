@@ -10,16 +10,43 @@ class CourseSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Course.
 
+    Атрибуты
+    ----------
+    lesson_count : SerializerMethodField
+        Поле для подсчета числа уроков в курсе. Определено как динамическое поле.
+
     Класс Meta:
+        Атрибуты
+        ----------
         model : Model
             Модель, используемая для сериализации (Course).
-        fields : str
+        fields : list[str]
             Поля модели, которые будут включены в сериализацию ('all' означает, что все поля будут включены).
     """
+
+    lesson_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = '__all__'
+
+    @staticmethod
+    def get_lesson_count(instance):
+        """
+        Возвращает количество уроков для данного курса.
+
+        Параметры
+        ----------
+        instance : Course
+            Экземпляр курса, для которого вычисляется количество уроков.
+
+        Возвращает
+        -------
+        int
+            Количество уроков для данного курса.
+        """
+
+        return Lesson.objects.filter(course=instance).count()
 
 
 class LessonSerializer(serializers.ModelSerializer):
