@@ -44,6 +44,6 @@ LMS-система онлайн обучения представляет соб
 - http://127.0.0.1:8080/api/courses/
 - http://127.0.0.1:8080/api/courses/<id>
 - http://127.0.0.1:8080/api/lessons/
-- http://127.0.0.1:8080/api/lessins/<id>
+- http://127.0.0.1:8080/api/lessons/<id>
 - http://127.0.0.1:8080/api/profile/
 - http://127.0.0.1:8080/api/users/payments/
