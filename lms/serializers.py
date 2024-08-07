@@ -66,19 +66,3 @@ class CourseSerializer(serializers.ModelSerializer):
         """
 
         return instance.lessons.count()
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для пользовательского профиля (модель User).
-
-    Класс Meta:
-        model : Model
-            Модель, используемая для сериализации (User).
-        fields : list
-            Поля модели, которые будут включены в сериализацию (['id', 'email', 'phone', 'city', 'avatar']).
-    """
-
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'phone', 'city', 'avatar']
