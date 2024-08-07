@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 
@@ -78,5 +79,5 @@ class UserProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         Возвращает:
             `User` : профиль текущего аутентифицированного пользователя. 
         """
-        
+
         return self.request.user
