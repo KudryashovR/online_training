@@ -39,11 +39,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model : CustomUser
             Указывает модель, с которой работает данный сериализатор.
         fields : str
-            Поле 'all' указывает, что необходимо сериализовать все поля модели CustomUser.
     """
 
     payment_history = PaymentSerializer(many=True, read_only=True, source='payments')
 
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = ['email', 'phone', 'city', 'avatar', 'payment_history']
