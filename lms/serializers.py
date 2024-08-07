@@ -6,12 +6,30 @@ from lms.models import Course, Lesson
 User = get_user_model()
 
 
+class LessonSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Lesson.
+
+    Класс Meta:
+        model : Model
+            Модель, используемая для сериализации (Lesson).
+        fields : str
+            Поля модели, которые будут включены в сериализацию ('all' означает, что все поля будут включены).
+    """
+
+    class Meta:
+        model = Lesson
+        fields = '__all__'
+
+
 class CourseSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Course.
 
     Атрибуты
     ----------
+    lessons : LessonSerializer
+        Поле для отображения подробной информации обо всех уроках курса.
     lesson_count : SerializerMethodField
         Поле для подсчета числа уроков в курсе. Определено как динамическое поле.
 
@@ -24,6 +42,7 @@ class CourseSerializer(serializers.ModelSerializer):
             Поля модели, которые будут включены в сериализацию ('all' означает, что все поля будут включены).
     """
 
+    lessons = LessonSerializer(many=True, read_only=True)
     lesson_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -46,23 +65,7 @@ class CourseSerializer(serializers.ModelSerializer):
             Количество уроков для данного курса.
         """
 
-        return Lesson.objects.filter(course=instance).count()
-
-
-class LessonSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Lesson.
-
-    Класс Meta:
-        model : Model
-            Модель, используемая для сериализации (Lesson).
-        fields : str
-            Поля модели, которые будут включены в сериализацию ('all' означает, что все поля будут включены).
-    """
-
-    class Meta:
-        model = Lesson
-        fields = '__all__'
+        return instance.lessons.count()
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
