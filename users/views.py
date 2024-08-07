@@ -1,4 +1,5 @@
-from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, filters as rf_filters
 
 from users.filters import PaymentFilter
 from users.models import Payment
@@ -25,5 +26,5 @@ class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     filter_class = PaymentFilter
-    filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, rf_filters.OrderingFilter)
     ordering_fields = ['payment_date']
