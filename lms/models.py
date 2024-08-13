@@ -1,61 +1,56 @@
 from django.db import models
 
+from users.models.user_model import CustomUser
+
 
 class Course(models.Model):
     """
-    Класс Course представляет курс.
+    Модель Курса.
 
     Атрибуты:
-    ----------
-    title : str
-        Наименование курса (максимальная длина 200 символов).
-    preview : ImageField
-        Изображение для предварительного просмотра курса (необязательное поле, загружается в 'course_previews/').
-    description : str
-        Описание курса.
+        title (CharField): Наименование курса.
+        preview (ImageField): Изображение для курса (может быть пустым).
+        description (TextField): Описание курса.
+        owner (ForeignKey): Владелец курса, ссылка на пользователя.
+
+    Методы:
+        __str__: Возвращает строковое представление курса.
     """
 
     title = models.CharField(max_length=200, verbose_name='наименование')
     preview = models.ImageField(upload_to='course_previews/', blank=True, null=True, verbose_name='изображение')
     description = models.TextField(verbose_name='описание')
+    owner = models.ForeignKey(CustomUser, related_name='courses', on_delete=models.CASCADE)
 
     def __str__(self):
         """
-        Возвращает строковое представление курса - его наименование.
+        Возвращает строковое представление курса.
+
+        Возвращаемое значение:
+            str: Название курса.
         """
 
         return self.title
 
     class Meta:
-        """
-        Метаданные для класса Course.
-
-        verbose_name : str
-            Человекочитаемое имя модели в единственном числе.
-        verbose_name_plural : str
-            Человекочитаемое имя модели во множественном числе.
-        """
-
         verbose_name = 'курс'
         verbose_name_plural = 'курсы'
 
 
 class Lesson(models.Model):
     """
-    Класс Lesson представляет урок, который является частью курса.
+    Модель Урока.
 
     Атрибуты:
-    ----------
-    course : ForeignKey
-        Ссылка на курс, к которому относится данный урок. При удалении курса, уроки также удаляются.
-    title : str
-        Наименование урока (максимальная длина 200 символов).
-    description : str
-        Описание урока.
-    preview : ImageField
-        Изображение для предварительного просмотра урока (необязательное поле, загружается в 'lesson_previews/').
-    video_url : URLField
-        URL на видео урока.
+        course (ForeignKey): Курс, к которому относится урок.
+        title (CharField): Название урока.
+        description (TextField): Описание урока.
+        preview (ImageField): Изображение для урока (может быть пустым).
+        video_url (URLField): URL-адрес видео.
+        owner (ForeignKey): Владелец урока, ссылка на пользователя.
+
+    Методы:
+        __str__: Возвращает строковое представление урока.
     """
 
     course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
@@ -63,23 +58,18 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='описание')
     preview = models.ImageField(upload_to='lesson_previews/', blank=True, null=True, verbose_name='изображение')
     video_url = models.URLField(verbose_name='видео')
+    owner = models.ForeignKey(CustomUser, related_name='lessons', on_delete=models.CASCADE)
 
     def __str__(self):
         """
-        Возвращает строковое представление урока - его наименование.
+        Возвращает строковое представление урока.
+
+        Возвращаемое значение:
+            str: Название урока.
         """
 
         return self.title
 
     class Meta:
-        """
-        Метаданные для класса Lesson.
-
-        verbose_name : str
-            Человекочитаемое имя модели в единственном числе.
-        verbose_name_plural : str
-            Человекочитаемое имя модели во множественном числе.
-        """
-
         verbose_name = 'урок'
         verbose_name_plural = 'уроки'

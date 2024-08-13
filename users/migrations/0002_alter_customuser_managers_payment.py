@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AlterModelManagers(
             name='customuser',
             managers=[
-                ('objects', users.models.UserManager()),
+                ('objects', users.models.user_model.UserManager()),
             ],
         ),
         migrations.CreateModel(
