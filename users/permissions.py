@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission
 
 
-class IsModerator(BasePermission):
+class IsNotModerator(BasePermission):
     """
     Разрешение, предоставляющее доступ только модераторам.
 
