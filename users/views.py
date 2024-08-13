@@ -4,8 +4,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 
+from users import permissions
 from users.models.payment_model import Payment
-from users.serializers import PaymentSerializer, UserProfileSerializer
+from users.models.user_model import CustomUser
+from users.serializers import PaymentSerializer, UserProfileSerializer, PublicUserProfileSerializer
 
 User = get_user_model()
 
@@ -39,27 +41,68 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
 class UserProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     """
+    UPDATE
     Предоставляет действия `получение` и `обновление` для пользовательского профиля.
 
     Атрибуты:
       `queryset` : QuerySet
           Набор данных для обработки (все объекты модели User).
-      `serializer_class` : Serializer
-          Класс сериализатора для пользовательского профиля (UserProfileSerializer).
       `permission_classes` : list
           Список классов разрешений для контроля доступа (только аутентифицированные пользователи).
     """
 
     queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        """
+        Определяет класс сериализатора для разных методов.
+
+        Возвращает:
+            class: Класс сериализатора, соответствующий текущему методу запроса.
+        """
+        if self.request.method in ['PUT', 'PATCH']:
+            return UserProfileSerializer
+        return PublicUserProfileSerializer
 
     def get_object(self):
         """
-        Переопределяет метод, чтобы получить профиль текущего пользователя.
+        Переопределяет метод для получения профиля текущего пользователя при выполнении действий обновления или удаления,
+        и получения указанного пользователя при выполнении действия получения.
 
         Возвращает:
-            `User` : профиль текущего аутентифицированного пользователя.
+            User: Профиль текущего аутентифицированного пользователя.
         """
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return self.request.user
+        return super().get_object()
 
-        return self.request.user
+class UserCreate(generics.CreateAPIView):
+    """
+    Класс представления для создания нового пользователя.
+
+    Атрибуты:
+        queryset (QuerySet): Набор запросов для модели CustomUser.
+        serializer_class (Serializer): Класс сериализатора, используемый для валидации и десериализации входных данных.
+        permission_classes (list): Список классов разрешений, применяемых к этому представлению. В данном случае
+                                   разрешен доступ для всех.
+    """
+
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UserList(generics.ListAPIView):
+    """
+    Класс представления для получения списка пользователей.
+
+    Атрибуты:
+        queryset (QuerySet): Набор запросов для модели CustomUser.
+        serializer_class (Serializer): Класс сериализатора, используемый для сериализации данных.
+        permission_classes (list): Список классов разрешений, применяемых к этому представлению. В данном случае доступ
+                                   разрешен только для аутентифицированных пользователей.
+    """
+
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
