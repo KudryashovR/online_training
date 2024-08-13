@@ -39,9 +39,12 @@ LMS-система онлайн обучения представляет соб
     ```
 
 **Использование**
-После успешного запуска сервера, откройте веб-браузер и перейдите по адресу `http://127.0.0.1:8000/`.
 Доступные URL:
 - http://127.0.0.1:8080/api/courses/
 - http://127.0.0.1:8080/api/lessons/
 - http://127.0.0.1:8080/api/users/profile/
 - http://127.0.0.1:8080/api/users/payments/
+- http://127.0.0.1:8080/api/users/users/
+- http://127.0.0.1:8080/api/users/token/
+- http://127.0.0.1:8080/api/users/token/refresh/
+- http://127.0.0.1:8080/api/users/register/
