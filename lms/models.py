@@ -1,8 +1,11 @@
 from django.db import models
 
+from users.models.user_model import CustomUser
+
 
 class Course(models.Model):
     """
+    UPDATE
     Класс Course представляет курс.
 
     Атрибуты:
@@ -18,6 +21,7 @@ class Course(models.Model):
     title = models.CharField(max_length=200, verbose_name='наименование')
     preview = models.ImageField(upload_to='course_previews/', blank=True, null=True, verbose_name='изображение')
     description = models.TextField(verbose_name='описание')
+    owner = models.ForeignKey(CustomUser, related_name='courses', on_delete=models.CASCADE)
 
     def __str__(self):
         """
@@ -42,6 +46,7 @@ class Course(models.Model):
 
 class Lesson(models.Model):
     """
+    UPDATE
     Класс Lesson представляет урок, который является частью курса.
 
     Атрибуты:
@@ -63,6 +68,7 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='описание')
     preview = models.ImageField(upload_to='lesson_previews/', blank=True, null=True, verbose_name='изображение')
     video_url = models.URLField(verbose_name='видео')
+    owner = models.ForeignKey(CustomUser, related_name='lessons', on_delete=models.CASCADE)
 
     def __str__(self):
         """
