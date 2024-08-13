@@ -1,6 +1,8 @@
-from rest_framework import serializers
+from rest_framework import serializers, generics, permissions
+from tutorial.quickstart.serializers import UserSerializer
 
 from users.models import Payment, CustomUser
+from users.views import User
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -46,3 +48,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['email', 'phone', 'city', 'avatar', 'payment_history']
+
+
+class UserCreate(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
