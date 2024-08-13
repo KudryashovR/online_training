@@ -1,4 +1,4 @@
-from rest_framework import serializers, generics, permissions
+from rest_framework import serializers
 
 from users.models.user_model import CustomUser
 from users.models.payment_model import Payment
@@ -22,24 +22,18 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PublicUserProfileSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для публичного отображения профиля пользователя.
+    """
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'city', 'avatar']
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    Сериализатор профиля пользователя. Этот класс предназначен для преобразования данных профиля пользователя в формат
-    JSON и обратно.
-
-    Атрибуты
-    --------
-    payment_history : PaymentSerializer
-        Сериализатор для вывода истории платежей пользователя. Использует сериализатор PaymentSerializer
-        для отображения связанных платежей. Поле many=True указывает, что может быть несколько платежей, read_only=True
-        делает это поле только для чтения, а source='payments' указывает на имя обратного отношения в модели платежей.
-
-    Метакласс
-    ---------
-    Meta
-        model : CustomUser
-            Указывает модель, с которой работает данный сериализатор.
-        fields : str
+    Сериализатор для профиля пользователя.
     """
 
     payment_history = PaymentSerializer(many=True, read_only=True, source='payments')
@@ -47,17 +41,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['email', 'phone', 'city', 'avatar', 'payment_history']
-
-
-class UserCreate(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.AllowAny]
-
-class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserProfileSerializer
-
-class UserList(generics.ListAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserProfileSerializer
