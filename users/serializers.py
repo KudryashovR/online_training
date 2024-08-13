@@ -1,6 +1,7 @@
 from rest_framework import serializers, generics, permissions
 
-from users.models import Payment, CustomUser
+from users.models.user_model import CustomUser
+from users.models.payment_model import Payment
 
 
 class PaymentSerializer(serializers.ModelSerializer):

@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 
-from users.models import Payment
+from users.models.payment_model import Payment
 from users.serializers import PaymentSerializer, UserProfileSerializer
 
 User = get_user_model()
