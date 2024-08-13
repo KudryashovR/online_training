@@ -24,3 +24,27 @@ class IsModerator(BasePermission):
         """
 
         return request.user.groups.filter(name='Модераторы').exists()
+
+
+class IsOwner(BasePermission):
+    """
+    Класс разрешений, проверяющий, что пользователь является владельцем объекта.
+
+    Методы:
+        has_object_permission: Проверяет, что пользователь является владельцем данного объекта.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Проверяет, что у пользователя есть разрешение на доступ к объекту, если он является владельцем.
+
+        Аргументы:
+            request (HttpRequest): Объект запроса.
+            view (View): Представление, к которому выполняется запрос.
+            obj (Model): Объект модели, к которому запрашивается доступ.
+
+        Возвращаемое значение:
+            bool: True, если пользователь является владельцем объекта, иначе False.
+        """
+
+        return obj.owner == request.user

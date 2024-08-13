@@ -3,19 +3,16 @@ from rest_framework.permissions import IsAuthenticated
 
 from lms.models import Course, Lesson
 from lms.serializers import CourseSerializer, LessonSerializer
-from users.permissions import IsModerator
+from users.permissions import IsModerator, IsOwner
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     """
-    ViewSet для работы с курсами.
-
-    - Создание и удаление курсов доступны только аутентифицированным пользователям.
-    - Просмотр и редактирование курсов доступны модераторам (пользователям, состоящим в группе "Moderators").
+    Вьюсет для работы с курсами. Поддерживает все стандартные операции CRUD.
 
     Атрибуты:
-        queryset: QuerySet с объектами курса.
-        serializer_class: Класс сериализатора для курсов.
+        queryset (QuerySet): Запрос для получения всех объектов Course.
+        serializer_class (Serializer): Класс сериализатора для модели Course.
     """
 
     queryset = Course.objects.all()
@@ -23,30 +20,50 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """
-        Возвращает список разрешений, необходимых для текущего действия.
+        Определяет и возвращает разрешения для текущего действия.
 
         Возвращаемое значение:
-            Список экземпляров разрешений.
+            list: Список экземпляров классов разрешений.
         """
 
-        if self.action in ['create', 'destroy']:
+        if self.action in ['create']:
             self.permission_classes = [IsAuthenticated]
-        elif self.action in ['update', 'partial_update', 'retrieve', 'list']:
-            self.permission_classes = [IsAuthenticated, IsModerator]
+        elif self.action in ['destroy', 'update', 'partial_update', 'retrieve', 'list']:
+            self.permission_classes = [IsAuthenticated, IsOwner | IsModerator]
 
         return [permission() for permission in self.permission_classes]
+
+    def perform_create(self, serializer):
+        """
+        Переопределяет метод для сохранения владельца курса при создании.
+
+        Аргументы:
+            serializer (Serializer): Сериализатор данных.
+        """
+
+        serializer.save(owner=self.request.user)
+
+    def get_queryset(self):
+        """
+        Возвращает queryset для вьюсета в зависимости от пользователя.
+
+        Возвращаемое значение:
+            QuerySet: Запрос для получения объектов Course, доступных текущему пользователю.
+        """
+
+        if self.request.user.groups.filter(name='Модераторы').exists():
+            return Course.objects.all()
+
+        return Course.objects.filter(owner=self.request.user)
 
 
 class LessonListCreateAPIView(generics.ListCreateAPIView):
     """
-    APIView для списка и создания уроков.
-
-    - Создание уроков доступно только аутентифицированным пользователям.
-    - Просмотр списка уроков доступен модераторам (пользователям, состоящим в группе "Moderators").
+    API представление для создания и получения списка уроков.
 
     Атрибуты:
-        queryset: QuerySet с объектами уроков.
-        serializer_class: Класс сериализатора для уроков.
+        queryset (QuerySet): Запрос для получения всех объектов Lesson.
+        serializer_class (Serializer): Класс сериализатора для модели Lesson.
     """
 
     queryset = Lesson.objects.all()
@@ -54,10 +71,10 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         """
-        Возвращает список разрешений, необходимых для текущего действия.
+        Определяет и возвращает разрешения для текущего запроса.
 
         Возвращаемое значение:
-            Список экземпляров разрешений.
+            list: Список экземпляров классов разрешений.
         """
 
         if self.request.method == 'POST':
@@ -67,17 +84,37 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
 
         return [permission() for permission in self.permission_classes]
 
+    def perform_create(self, serializer):
+        """
+        Переопределяет метод для сохранения владельца урока при создании.
+
+        Аргументы:
+            serializer (Serializer): Сериализатор данных.
+        """
+
+        serializer.save(owner=self.request.user)
+
+    def get_queryset(self):
+        """
+        Возвращает queryset для представления в зависимости от пользователя.
+
+        Возвращаемое значение:
+            QuerySet: Запрос для получения объектов Lesson, доступных текущему пользователю.
+        """
+
+        if self.request.user.groups.filter(name='Модераторы').exists():
+            return Lesson.objects.all()
+
+        return Lesson.objects.filter(owner=self.request.user)
+
 
 class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
-    APIView для получения, обновления и удаления уроков.
-
-    - Удаление уроков доступно только аутентифицированным пользователям.
-    - Получение и обновление уроков доступно модераторам (пользователям, состоящим в группе "Moderators").
+    API представление для получения, обновления и удаления уроков.
 
     Атрибуты:
-        queryset: QuerySet с объектами уроков.
-        serializer_class: Класс сериализатора для уроков.
+        queryset (QuerySet): Запрос для получения всех объектов Lesson.
+        serializer_class (Serializer): Класс сериализатора для модели Lesson.
     """
 
     queryset = Lesson.objects.all()
@@ -85,15 +122,15 @@ class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         """
-        Возвращает список разрешений, необходимых для текущего действия.
+        Определяет и возвращает разрешения для текущего запроса.
 
         Возвращаемое значение:
-            Список экземпляров разрешений.
+            list: Список экземпляров классов разрешений.
         """
 
         if self.request.method == 'DELETE':
-            self.permission_classes = [IsAuthenticated]
+            self.permission_classes = [IsAuthenticated, IsOwner | IsModerator]
         elif self.request.method in ['PATCH', 'PUT', 'GET']:
-            self.permission_classes = [IsAuthenticated, IsModerator]
+            self.permission_classes = [IsAuthenticated, IsOwner | IsModerator]
 
         return [permission() for permission in self.permission_classes]
