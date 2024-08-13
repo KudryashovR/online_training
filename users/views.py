@@ -2,9 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from users import permissions
 from users.models.payment_model import Payment
 from users.models.user_model import CustomUser
 from users.serializers import PaymentSerializer, UserProfileSerializer, PublicUserProfileSerializer
@@ -90,7 +89,7 @@ class UserCreate(generics.CreateAPIView):
 
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
 
 class UserList(generics.ListAPIView):
     """
@@ -105,4 +104,4 @@ class UserList(generics.ListAPIView):
 
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
