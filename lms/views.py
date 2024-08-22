@@ -17,6 +17,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     Атрибуты:
         queryset (QuerySet): Запрос для получения всех объектов Course.
         serializer_class (Serializer): Класс сериализатора для модели Course.
+        pagination_class (Class): Класс пагинации, применяемый к результатам.
     """
 
     queryset = Course.objects.all()
@@ -69,6 +70,7 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
     Атрибуты:
         queryset (QuerySet): Запрос для получения всех объектов Lesson.
         serializer_class (Serializer): Класс сериализатора для модели Lesson.
+        pagination_class (Class): Класс пагинации, применяемый к результатам.
     """
 
     queryset = Lesson.objects.all()
