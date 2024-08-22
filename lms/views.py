@@ -1,7 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from lms.models import Course, Lesson
+from lms.models import Course, Lesson, Subscription
+from lms.paginators import LessonsAndCoursesPageNumberPagination
 from lms.serializers import CourseSerializer, LessonSerializer
 from users.permissions import IsModerator, IsOwner
 
@@ -13,10 +17,12 @@ class CourseViewSet(viewsets.ModelViewSet):
     Атрибуты:
         queryset (QuerySet): Запрос для получения всех объектов Course.
         serializer_class (Serializer): Класс сериализатора для модели Course.
+        pagination_class (Class): Класс пагинации, применяемый к результатам.
     """
 
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    pagination_class = LessonsAndCoursesPageNumberPagination
 
     def get_permissions(self):
         """
@@ -64,10 +70,12 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
     Атрибуты:
         queryset (QuerySet): Запрос для получения всех объектов Lesson.
         serializer_class (Serializer): Класс сериализатора для модели Lesson.
+        pagination_class (Class): Класс пагинации, применяемый к результатам.
     """
 
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    pagination_class = LessonsAndCoursesPageNumberPagination
 
     def get_permissions(self):
         """
@@ -134,3 +142,56 @@ class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
             self.permission_classes = [IsAuthenticated, IsOwner | IsModerator]
 
         return [permission() for permission in self.permission_classes]
+
+
+class SubscriptionView(APIView):
+    """
+    Представление для управления подписками на курсы.
+
+    Это представление позволяет аутентифицированным пользователям добавлять или удалять подписки на курсы.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Обрабатывает POST-запрос для добавления или удаления подписки на курс.
+
+        Если пользователь уже подписан на указанный курс, подписка будет удалена. Если не подписан, подписка будет
+        создана.
+
+        Параметры
+        ----------
+        request : Request
+            Объект запроса с данными от клиента.
+
+        *args : list
+            Дополнительные позиционные аргументы.
+
+        **kwargs : dict
+            Дополнительные именованные аргументы.
+
+        Возвращает
+        -------
+        Response
+            Ответ с сообщением о результате операции.
+
+        Содержимое
+        ----------
+        message : str
+            Сообщение, указывающее, было ли выполнено добавление или удаление подписки.
+        """
+
+        user = request.user
+        course_id = request.data.get('course_id')
+        course = get_object_or_404(Course, id=course_id)
+        subscription = Subscription.objects.filter(user=user, course=course)
+
+        if subscription.exists():
+            subscription.delete()
+            message = 'подписка удалена'
+        else:
+            Subscription.objects.create(user=user, course=course)
+            message = 'подписка добавлена'
+
+        return Response({"message": message})
