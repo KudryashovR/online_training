@@ -73,3 +73,30 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = 'урок'
         verbose_name_plural = 'уроки'
+
+
+class Subscription(models.Model):
+    """
+    Модель Subscription представляет собой подписку пользователя на курс.
+
+    Атрибуты:
+    ----------
+    user : ForeignKey
+        Ссылка на модель CustomUser, представляющая пользователя, сделавшего подписку. При удалении пользователя
+        все его подписки также удаляются (on_delete=models.CASCADE).
+
+    course : ForeignKey
+        Ссылка на модель Course, представляющая курс, на который пользователь подписан. При удалении курса все связанные
+         подписки также удаляются (on_delete=models.CASCADE).
+
+    Методы:
+    -------
+    __str__():
+        Возвращает строковое представление объекта подписки в формате "пользователь подписан на курс".
+    """
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="пользователь")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="курсы")
+
+    def __str__(self):
+        return f"{self.user} подписан на {self.course}"
