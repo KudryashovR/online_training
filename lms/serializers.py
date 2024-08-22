@@ -16,6 +16,9 @@ class LessonSerializer(serializers.ModelSerializer):
             Модель, используемая для сериализации (Lesson).
         fields : str
             Поля модели, которые будут включены в сериализацию ('all' означает, что все поля будут включены).
+        validators : list
+            Список валидаторов, которые будут применять к сериализованным данным. В данном случае используется
+            LinkValidator для поля 'video_url'.
     """
 
     class Meta:
