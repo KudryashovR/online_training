@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from lms.models import Course, Lesson, Subscription
+from lms.paginators import LessonsAndCoursesPageNumberPagination
 from lms.serializers import CourseSerializer, LessonSerializer
 from users.permissions import IsModerator, IsOwner
 
@@ -16,10 +17,12 @@ class CourseViewSet(viewsets.ModelViewSet):
     Атрибуты:
         queryset (QuerySet): Запрос для получения всех объектов Course.
         serializer_class (Serializer): Класс сериализатора для модели Course.
+        pagination_class (Class): Класс пагинации, применяемый к результатам.
     """
 
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    pagination_class = LessonsAndCoursesPageNumberPagination
 
     def get_permissions(self):
         """
@@ -67,10 +70,12 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
     Атрибуты:
         queryset (QuerySet): Запрос для получения всех объектов Lesson.
         serializer_class (Serializer): Класс сериализатора для модели Lesson.
+        pagination_class (Class): Класс пагинации, применяемый к результатам.
     """
 
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    pagination_class = LessonsAndCoursesPageNumberPagination
 
     def get_permissions(self):
         """
