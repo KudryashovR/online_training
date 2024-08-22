@@ -14,7 +14,7 @@ class LinkValidator:
         self.field = field
 
     def __call__(self, value):
-        parsed_url = urlparse(value)
+        parsed_url = urlparse(value.get(self.field))
 
         if parsed_url.netloc != 'www.youtube.com' and parsed_url.netloc != 'youtube.com':
             raise ValidationError(self.message)
