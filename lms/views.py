@@ -178,7 +178,7 @@ class SubscriptionView(APIView):
         """
 
         user = request.user
-        course_id = request.data.get('pk')
+        course_id = request.data.get('course_id')
         course = get_object_or_404(Course, id=course_id)
         subscription = Subscription.objects.filter(user=user, course=course)
 
