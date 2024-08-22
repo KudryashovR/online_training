@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from lms.models import Course, Lesson
+from lms.validators import LinkValidator
 
 User = get_user_model()
 
@@ -20,6 +21,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = '__all__'
+        validators = [LinkValidator(field='video_url')]
 
 
 class CourseSerializer(serializers.ModelSerializer):
