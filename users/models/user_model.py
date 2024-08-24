@@ -45,7 +45,7 @@ class UserManager(BaseUserManager):
 
         Параметры:
         - email (str): Электронная почта пользователя.
-        - password (str, optional): Пароль пользователя. По умолчанию None.
+        - password (str, optional): Пароль пользователя.
         - **extra_fields: Прочие поля, которые необходимо установить для пользователя.
 
     create_superuser(email, password=None, **extra_fields):
@@ -73,7 +73,7 @@ class UserManager(BaseUserManager):
         GlobalUserModel = apps.get_model(self.model._meta.app_label, self.model._meta.object_name)
         email = GlobalUserModel.normalize_username(email)
         user = self.model(email=email, **extra_fields)
-        user.password = make_password(password)
+        user.set_password(password)
         user.save(using=self._db)
 
         return user
