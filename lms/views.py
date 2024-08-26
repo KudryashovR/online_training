@@ -1,9 +1,12 @@
+from pprint import pprint
+
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.reverse import reverse_lazy
 from rest_framework.views import APIView
 
 from lms.models import Course, Lesson, Subscription
@@ -206,7 +209,7 @@ class CreatePaymentAPIView(APIView):
         course = get_object_or_404(Course, id=course_id)
 
         if not course.stripe_product_id:
-            product = create_product(course.name, course.description)
+            product = create_product(course.title, course.description)
             course.stripe_product_id = product.id
             course.save()
 
@@ -215,8 +218,8 @@ class CreatePaymentAPIView(APIView):
             course.stripe_price_id = price.id
             course.save()
 
-        success_url = request.build_absolute_uri(reverse('payment-success'))
-        cancel_url = request.build_absolute_uri(reverse('payment-cancel'))
+        success_url = request.build_absolute_uri(reverse('lms:payment-success'))
+        cancel_url = request.build_absolute_uri(reverse('lms:payment-cancel'))
         session = create_checkout_session(course.stripe_price_id, success_url, cancel_url)
 
         if session is None:
@@ -226,7 +229,7 @@ class CreatePaymentAPIView(APIView):
 
 
 def payment_success(request):
-    return HttpResponse("Payment was successful!")
+    return JsonResponse(data={"answer": "Payment was successful!"}, status=status.HTTP_200_OK)
 
 def payment_cancel(request):
-    return HttpResponse("Payment was cancelled.")
+    return JsonResponse(data={"answer": "Payment was cancelled."}, status=status.HTTP_200_OK)

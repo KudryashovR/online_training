@@ -22,15 +22,15 @@ from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Your API Title",
+        title="Online training API",
         default_version='v1',
-        description="Test description",
+        description="Platform API documentation",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="contact@yourdomain.local"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=[permissions.AllowAny],
+    permission_classes=[permissions.BasePermission],
 )
 
 urlpatterns = [
