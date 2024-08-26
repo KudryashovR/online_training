@@ -8,16 +8,17 @@ class Course(models.Model):
     Модель Курса.
 
     Атрибуты:
-        title (CharField): Наименование курса.
-        preview (ImageField): Изображение для курса (может быть пустым).
-        description (TextField): Описание курса.
-        owner (ForeignKey): Владелец курса, ссылка на пользователя.
-        price (IntegerField): Цена курса.
-        stripe_product_id (CharField): Идентификатор продукта в Stripe (может быть пустым).
-        stripe_price_id (CharField): Идентификатор цены в Stripe (может быть пустым).
+        - title (CharField): Наименование курса.
+        - preview (ImageField): Изображение для курса (может быть пустым).
+        - description (TextField): Описание курса.
+        - owner (ForeignKey): Владелец курса, ссылка на пользователя.
+        - price (IntegerField): Цена курса.
+        - stripe_product_id (CharField): Идентификатор продукта в Stripe (может быть пустым).
+        - stripe_price_id (CharField): Идентификатор цены в Stripe (может быть пустым).
+        - updated_at (DateTimeField): Время изменения записи (обновляется автоматически).
 
     Методы:
-        str: Возвращает строковое представление курса.
+        - str: Возвращает строковое представление курса.
     """
 
     title = models.CharField(max_length=200, verbose_name='наименование')
@@ -34,7 +35,7 @@ class Course(models.Model):
         Возвращает строковое представление курса.
 
         Возвращаемое значение:
-            str: Название курса.
+            - str: Название курса.
         """
 
         return self.title
@@ -57,7 +58,7 @@ class Lesson(models.Model):
         owner (ForeignKey): Владелец урока, ссылка на пользователя.
 
     Методы:
-        __str__: Возвращает строковое представление урока.
+        str: Возвращает строковое представление урока.
     """
 
     course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
@@ -94,7 +95,7 @@ class Subscription(models.Model):
 
     course : ForeignKey
         Ссылка на модель Course, представляющая курс, на который пользователь подписан. При удалении курса все связанные
-         подписки также удаляются (on_delete=models.CASCADE).
+        подписки также удаляются (on_delete=models.CASCADE).
 
     Методы:
     -------
@@ -106,6 +107,13 @@ class Subscription(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="courses")
 
     def __str__(self):
+        """
+        Возвращает строковое представление объекта подписки.
+
+        Возвращаемое значение:
+            str: Строка в формате "пользователь подписан на курс".
+        """
+
         return f"{self.user} подписан на {self.course}"
 
     class Meta:
