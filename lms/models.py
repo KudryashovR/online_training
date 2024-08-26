@@ -12,9 +12,12 @@ class Course(models.Model):
         preview (ImageField): Изображение для курса (может быть пустым).
         description (TextField): Описание курса.
         owner (ForeignKey): Владелец курса, ссылка на пользователя.
+        price (IntegerField): Цена курса.
+        stripe_product_id (CharField): Идентификатор продукта в Stripe (может быть пустым).
+        stripe_price_id (CharField): Идентификатор цены в Stripe (может быть пустым).
 
     Методы:
-        __str__: Возвращает строковое представление курса.
+        str: Возвращает строковое представление курса.
     """
 
     title = models.CharField(max_length=200, verbose_name='наименование')

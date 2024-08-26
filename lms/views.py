@@ -204,6 +204,19 @@ class SubscriptionView(APIView):
 
 
 class CreatePaymentAPIView(APIView):
+    """
+    Представление для создания платежа.
+
+    Методы:
+        post: Обрабатывает POST-запрос для создания платежной сессии.
+
+    Аргументы метода post:
+        request (HttpRequest): HTTP-запрос от клиента.
+        course_id (int): Идентификатор курса, для которого создаётся платёжная сессия.
+
+    Возвращаемое значение метода post:
+        Response: Ответ с данными платежной сессии или с сообщением об ошибке.
+    """
 
     def post(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
@@ -229,7 +242,27 @@ class CreatePaymentAPIView(APIView):
 
 
 def payment_success(request):
+    """
+    Обработчик для успешного платежа.
+
+    Аргументы:
+        request (HttpRequest): HTTP-запрос от клиента.
+
+    Возвращаемое значение:
+        JsonResponse: Ответ с сообщением об успешной оплате и статусом HTTP 200.
+    """
+
     return JsonResponse(data={"answer": "Payment was successful!"}, status=status.HTTP_200_OK)
 
 def payment_cancel(request):
+    """
+    Обработчик для отмены платежа.
+
+    Аргументы:
+        request (HttpRequest): HTTP-запрос от клиента.
+
+    Возвращаемое значение:
+        JsonResponse: Ответ с сообщением об отмене оплаты и статусом HTTP 200.
+    """
+
     return JsonResponse(data={"answer": "Payment was cancelled."}, status=status.HTTP_200_OK)
