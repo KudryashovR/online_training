@@ -1,19 +1,21 @@
-from pprint import pprint
-
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import get_object_or_404, render
+import stripe
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.reverse import reverse_lazy
 from rest_framework.views import APIView
 
+from config import settings
 from lms.models import Course, Lesson, Subscription
 from lms.paginators import LessonsAndCoursesPageNumberPagination
 from lms.serializers import CourseSerializer, LessonSerializer
 from lms.services.stripe_service import create_product, create_price, create_checkout_session
 from users.permissions import IsModerator, IsOwner
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -266,3 +268,14 @@ def payment_cancel(request):
     """
 
     return JsonResponse(data={"answer": "Payment was cancelled."}, status=status.HTTP_200_OK)
+
+def check_session_status(request, session_id):
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        return JsonResponse({
+            'status': session['status'],
+            'payment_status': session['payment_status'],
+            'customer_email': session['customer_email'],
+        })
+    except stripe.error.StripeError as e:
+        return JsonResponse({'error': str(e)}, status=400)
