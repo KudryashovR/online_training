@@ -1,8 +1,13 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import serializers
 
 from lms.models import Course, Lesson, Subscription
 from lms.validators import LinkValidator
+
+from lms.tasks import send_update_email
 
 User = get_user_model()
 
@@ -17,14 +22,49 @@ class LessonSerializer(serializers.ModelSerializer):
         fields : str
             Поля модели, которые будут включены в сериализацию ('all' означает, что все поля будут включены).
         validators : list
-            Список валидаторов, которые будут применять к сериализованным данным. В данном случае используется
-            LinkValidator для поля 'video_url'.
+            Список валидаторов, которые будут применяться к сериализованным данным. В данном случае используется
+            LinkValidator для проверки поля 'video_url'.
     """
 
     class Meta:
         model = Lesson
         fields = '__all__'
         validators = [LinkValidator(field='video_url')]
+
+    def update(self, instance, validated_data):
+        """
+        Обновляет экземпляр Lesson с использованием данных validated_data.
+
+        При обновлении также проверяется, обновлялся ли связанный курс более 4 часов назад.
+        Если да, то подписчики курса получают уведомление по электронной почте об обновлении урока.
+
+        Параметры:
+        instance : Lesson
+            Экземпляр урока, который нужно обновить.
+        validated_data : dict
+            Данные, прошедшие валидацию и использующиеся для обновления урока.
+
+        Возврат:
+        Lesson : Обновленный экземпляр урока.
+        """
+
+        now = timezone.now()
+        four_hours_ago = now - timedelta(hours=4)
+        updated_course = Course.objects.filter(pk=instance.course_id, updated_at__lte=four_hours_ago).last()
+
+        if updated_course:
+            subscribers = Subscription.objects.filter(course=updated_course)
+            subscribed_users = [subscription.user for subscription in subscribers]
+
+            for user in subscribed_users:
+                send_update_email.delay(user.email, instance.title)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -75,6 +115,23 @@ class CourseSerializer(serializers.ModelSerializer):
         -------
         int
             Количество уроков для данного курса.
+
+    update(instance, validated_data):
+        Обновляет экземпляр курса с использованием данных validated_data.
+
+        При обновлении также уведомляет всех подписчиков курса по электронной почте о произошедших изменениях.
+
+        Параметры
+        ----------
+        instance : Course
+            Экземпляр курса, который нужно обновить.
+        validated_data : dict
+            Данные, прошедшие валидацию и используемые для обновления курса.
+
+        Возвращает
+        -------
+        Course
+            Обновленный экземпляр курса.
     """
 
     lessons = LessonSerializer(many=True, read_only=True)
@@ -121,3 +178,35 @@ class CourseSerializer(serializers.ModelSerializer):
         """
 
         return instance.lessons.count()
+
+    def update(self, instance, validated_data):
+        """
+        Обновляет экземпляр курса с использованием данных validated_data.
+
+        При обновлении также уведомляет всех подписчиков курса по электронной почте о произошедших изменениях.
+
+        Параметры
+        ----------
+        instance : Course
+            Экземпляр курса, который нужно обновить.
+        validated_data : dict
+            Данные, прошедшие валидацию и используемые для обновления курса.
+
+        Возвращает
+        -------
+        Course
+            Обновленный экземпляр курса.
+        """
+
+        subscribers = Subscription.objects.filter(course=instance)
+        subscribed_users = [subscription.user for subscription in subscribers]
+
+        for user in subscribed_users:
+            send_update_email.delay(user.email, instance.title)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
