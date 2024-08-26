@@ -13,3 +13,4 @@ def send_update_email(user_email, course_name):
         [user_email],
         fail_silently=False,
     )
+    print

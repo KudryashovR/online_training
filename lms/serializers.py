@@ -4,6 +4,8 @@ from rest_framework import serializers
 from lms.models import Course, Lesson, Subscription
 from lms.validators import LinkValidator
 
+from lms.tasks import send_update_email
+
 User = get_user_model()
 
 
@@ -121,3 +123,17 @@ class CourseSerializer(serializers.ModelSerializer):
         """
 
         return instance.lessons.count()
+
+    def update(self, instance, validated_data):
+        subscribers = Subscription.objects.filter(course=instance)
+        subscribed_users = [subscription.user for subscription in subscribers]
+
+        for user in subscribed_users:
+            send_update_email.delay(user.email, instance.title)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
