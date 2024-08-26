@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
+    'drf_yasg',
 
     'users',
     'lms',
@@ -164,3 +165,6 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
+
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = env("STRIPE_PUBLISHABLE_KEY")
