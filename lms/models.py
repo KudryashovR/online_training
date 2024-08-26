@@ -21,6 +21,9 @@ class Course(models.Model):
     preview = models.ImageField(upload_to='course_previews/', blank=True, null=True, verbose_name='изображение')
     description = models.TextField(verbose_name='описание')
     owner = models.ForeignKey(CustomUser, related_name='courses', on_delete=models.CASCADE)
+    price = models.IntegerField(help_text="цена")
+    stripe_product_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_price_id = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         """
