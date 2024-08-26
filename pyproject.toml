@@ -16,6 +16,7 @@ django-filter = "^24.3"
 djangorestframework-simplejwt = "^5.3.1"
 drf-yasg = "^1.21.7"
 setuptools = "^73.0.1"
+stripe = "^10.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
