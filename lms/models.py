@@ -27,6 +27,7 @@ class Course(models.Model):
     price = models.IntegerField(help_text="цена")
     stripe_product_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_price_id = models.CharField(max_length=255, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name='время изменения')
 
     def __str__(self):
         """

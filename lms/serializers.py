@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import serializers
 
 from lms.models import Course, Lesson, Subscription
@@ -27,6 +30,24 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = '__all__'
         validators = [LinkValidator(field='video_url')]
+
+    def update(self, instance, validated_data):
+        now = timezone.now()
+        four_hours_ago = now - timedelta(hours=4)
+        updated_course = Course.objects.filter(pk=instance.course_id, updated_at__lte=four_hours_ago).last()
+        if updated_course:
+            subscribers = Subscription.objects.filter(course=updated_course)
+            subscribed_users = [subscription.user for subscription in subscribers]
+
+            for user in subscribed_users:
+                send_update_email.delay(user.email, instance.title)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
 
 
 class CourseSerializer(serializers.ModelSerializer):
