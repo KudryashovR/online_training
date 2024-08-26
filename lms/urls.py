@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from lms.apps import LmsConfig
 from lms.views import CourseViewSet, LessonListCreateAPIView, LessonRetrieveUpdateDestroyAPIView, SubscriptionView, \
-    CreatePaymentAPIView, payment_success, payment_cancel
+    CreatePaymentAPIView, payment_success, payment_cancel, check_session_status
 
 app_name = LmsConfig.name
 
@@ -18,4 +18,5 @@ urlpatterns = [
     path('create-payment/<int:course_id>/', CreatePaymentAPIView.as_view(), name='create-payment'),
     path('success/', payment_success, name='payment-success'),
     path('cancel/', payment_cancel, name='payment-cancel'),
+    path('check-session-status/<str:session_id>/', check_session_status, name='check-session-status'),
 ]
