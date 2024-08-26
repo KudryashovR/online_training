@@ -1,5 +1,7 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, generics
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,6 +9,7 @@ from rest_framework.views import APIView
 from lms.models import Course, Lesson, Subscription
 from lms.paginators import LessonsAndCoursesPageNumberPagination
 from lms.serializers import CourseSerializer, LessonSerializer
+from lms.services.stripe_service import create_product, create_price, create_checkout_session
 from users.permissions import IsModerator, IsOwner
 
 
@@ -195,3 +198,35 @@ class SubscriptionView(APIView):
             message = 'подписка добавлена'
 
         return Response({"message": message})
+
+
+class CreatePaymentAPIView(APIView):
+
+    def post(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+
+        if not course.stripe_product_id:
+            product = create_product(course.name, course.description)
+            course.stripe_product_id = product.id
+            course.save()
+
+        if not course.stripe_price_id:
+            price = create_price(course.stripe_product_id, course.price)
+            course.stripe_price_id = price.id
+            course.save()
+
+        success_url = request.build_absolute_uri(reverse('payment-success'))
+        cancel_url = request.build_absolute_uri(reverse('payment-cancel'))
+        session = create_checkout_session(course.stripe_price_id, success_url, cancel_url)
+
+        if session is None:
+            return Response({'error': 'Failed to create checkout session'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'id': session.id, 'url': session.url}, status=status.HTTP_200_OK)
+
+
+def payment_success(request):
+    return HttpResponse("Payment was successful!")
+
+def payment_cancel(request):
+    return HttpResponse("Payment was cancelled.")
