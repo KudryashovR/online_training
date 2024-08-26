@@ -9,6 +9,7 @@ LMS-система онлайн обучения представляет соб
 - Создание, редактирование и удаление уроков
 - Ведение учета платежей от пользователей
 - Подписка, отписка от курсов
+- Оплата курса
 
 **Технологический стек**
 - Python 3.x
@@ -47,7 +48,9 @@ LMS-система онлайн обучения представляет соб
 - /api/users/profile/
 - /api/users/payments/
 - /api/subscribe/
-- http://127.0.0.1:8080/api/users/users/
-- http://127.0.0.1:8080/api/users/token/
-- http://127.0.0.1:8080/api/users/token/refresh/
-- http://127.0.0.1:8080/api/users/register/
+- /api/create-payment/
+- /api/check-session-status/
+- /users/users/
+- /api/users/token/
+- /api/users/token/refresh/
+- /api/users/register/
