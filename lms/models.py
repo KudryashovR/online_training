@@ -101,8 +101,12 @@ class Subscription(models.Model):
         Возвращает строковое представление объекта подписки в формате "пользователь подписан на курс".
     """
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="пользователь")
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="курсы")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="courses")
 
     def __str__(self):
         return f"{self.user} подписан на {self.course}"
+
+    class Meta:
+        verbose_name = 'подписка'
+        verbose_name_plural = 'подписки'
