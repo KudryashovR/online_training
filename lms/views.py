@@ -1,4 +1,5 @@
 import stripe
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -12,6 +13,7 @@ from lms.models import Course, Lesson, Subscription
 from lms.paginators import LessonsAndCoursesPageNumberPagination
 from lms.serializers import CourseSerializer, LessonSerializer
 from lms.services.stripe_service import create_product, create_price, create_checkout_session
+from users.models.payment_model import Payment
 from users.permissions import IsModerator, IsOwner
 
 
@@ -219,6 +221,7 @@ class CreatePaymentAPIView(APIView):
     Возвращаемое значение метода post:
         Response: Ответ с данными платежной сессии или с сообщением об ошибке.
     """
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
@@ -239,6 +242,15 @@ class CreatePaymentAPIView(APIView):
 
         if session is None:
             return Response({'error': 'Failed to create checkout session'}, status=status.HTTP_400_BAD_REQUEST)
+
+        Payment.objects.create(
+            user=request.user,
+            paid_course=course,
+            stripe_payment_id=session.id,
+            amount=course.price / 100,
+            payment_method='TRANSFER',
+            stripe_status=session.payment_status,
+        )
 
         return Response({'id': session.id, 'url': session.url}, status=status.HTTP_200_OK)
 
@@ -269,7 +281,30 @@ def payment_cancel(request):
 
     return JsonResponse(data={"answer": "Payment was cancelled."}, status=status.HTTP_200_OK)
 
+@login_required
 def check_session_status(request, session_id):
+    """
+    Проверяет статус сеанса оплаты Stripe и обновляет соответствующий платеж в базе данных.
+
+    Аргументы:
+    request -- HTTP-запрос, из которого может быть извлечена информация о пользователе.
+    session_id -- Идентификатор сеанса оплаты Stripe для проверки.
+
+    Возвращает:
+    JsonResponse с информацией о статусе сеанса и состоянии оплаты при успешной проверке.
+    JsonResponse с ошибкой при возникновении ошибки Stripe.
+
+    Порядок действий:
+    1. Извлекается сеанс оплаты Stripe с использованием предоставленного session_id.
+    2. Формируется JsonResponse с данными о статусе сеанса, состоянии оплаты и электронной почте клиента.
+    3. В случае ошибки Stripe, формируется JsonResponse с информацией об ошибке.
+    4. Всегда выполняется блок finally для обновления статуса транзакции в базе данных,
+       если статус в базе данных отличается от текущего статуса оплаты.
+
+    Исключения:
+    stripe.error.StripeError -- Обработчик исключений Stripe для вывода сообщения об ошибке в формате JsonResponse.
+    """
+
     try:
         session = stripe.checkout.Session.retrieve(session_id)
         return JsonResponse({
@@ -279,3 +314,11 @@ def check_session_status(request, session_id):
         })
     except stripe.error.StripeError as e:
         return JsonResponse({'error': str(e)}, status=400)
+    finally:
+        payment_id = session['id']
+        payment_status = session['status']
+        payment_line = Payment.objects.all().filter(stripe_payment_id=payment_id).first()
+
+        if payment_line.stripe_status != payment_status:
+            payment_line.stripe_status = payment_status
+            payment_line.save()
