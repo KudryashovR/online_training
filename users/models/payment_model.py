@@ -23,6 +23,10 @@ class Payment(models.Model):
         Сумма оплаты.
     payment_method : CharField
         Способ оплаты, возможные значения - 'CASH' (наличные) и 'TRANSFER' (перевод на счет).
+    stripe_payment_id : CharField
+        Идентификатор транзакции в Stripe. Может быть пустым.
+    stripe_status : CharField
+        Статус транзакции в Stripe. Может быть пустым.
 
     Методы:
     -------
