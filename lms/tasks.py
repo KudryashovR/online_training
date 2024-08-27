@@ -1,7 +1,13 @@
+from datetime import timedelta
+
 from celery import shared_task
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from config import settings
+
+User = get_user_model()
 
 
 @shared_task
@@ -25,3 +31,13 @@ def send_update_email(user_email, course_name):
         [user_email],
         fail_silently=False,
     )
+
+
+@shared_task
+def deactivate_inactive_users():
+    one_month_ago = timezone.now() - timedelta(days=30)
+    inactive_users = User.objects.filter(last_login__lt=one_month_ago, is_active=True)
+
+    for user in inactive_users:
+        user.is_active = False
+        user.save()
