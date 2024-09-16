@@ -24,6 +24,8 @@ LMS-система онлайн обучения представляет соб
 - celery
 - redis
 - django-celery-beat
+- docker
+- docker-compose
 
 **Дополнительные требования**
 - Наличие учетной записи почтового сервиса
@@ -38,25 +40,17 @@ LMS-система онлайн обучения представляет соб
     cd online_training
     ```
 
-2. **Настройка виртуального окружения и установка зависимостей:**
-    ```bash
-    python poetry install
-    python poetry shell
-    ```
-
-3. **Создание и настройка файла `.env`:**
+2. **Создание и настройка файла `.env`:**
     Создайте файл `.env` в корне проекта и добавьте настройки, указанные в файле `.env.example`
 
-4. **Применение миграций и запуск сервера:**
-    ```bash
-    python manage.py migrate
-    python manage.py runserver
-    ```
+3. **Сборка образа и запуск в фоне после успешной сборки**
+   ```bash
+   docker-compose up -d —build
+   ```
 
-5. **Запуск служб контроля выполнения фоновых задач:**
-    ```bash
-    celery -A config worker -l INFO
-    celery -A config beat -l INFO
+4. **Создание суперпользователя**
+   ```bash
+   docker exec -it web poetry run python manage.py createsuperuser
    ```
 
 **Использование**
