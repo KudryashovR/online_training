@@ -92,6 +92,7 @@ DATABASES = {
         'NAME': env('DATABASES_NAME'),
         'USER': env('DATABASES_USER'),
         'PASSWORD': env('DATABASES_PASSWORD'),
+        'HOST': env('DATABASES_HOST'),
     }
 }
 

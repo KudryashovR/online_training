@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: db
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ontraining-network
+    restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ontraining-network
+    restart: always
+
+  celery_worker:
+    build: .
+    command: poetry run celery -A config worker -l INFO
+    container_name: celery_worker
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - ontraining-network
+    restart: always
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:
+    build: .
+    command: poetry run celery -A config beat -l INFO
+    container_name: celery_beat
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - ontraining-network
+    restart: always
+    depends_on:
+      - redis
+      - db
+
+  web:
+    build: .
+    command: bash -c "poetry run python manage.py migrate &&
+                      poetry run python manage.py runserver 0.0.0.0:8000"
+    container_name: web
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - ontraining-network
+    links:
+      - db:db
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  postgres_data:
+
+networks:
+  ontraining-network:
+    driver: bridge
