@@ -8,7 +8,7 @@ RUN apt-get update &&\
 
 ENV PATH="/root/.local/bin:$PATH"
 
-COPY pyproject.toml poetry.lock /app/
+COPY pyproject.toml /app/
 
 RUN poetry install --no-dev
 
